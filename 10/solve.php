@@ -28,10 +28,13 @@ foreach ( [20, 60, 100, 140, 180, 220] as $cycle )
 
 echo "First part: $signal_strength_sum\n";
 
-echo "\nSecond part:\n";
+echo "Second part:";
 
 for ( $pixel = 0; $pixel < 240; $pixel++ )
 {
+    if ( $pixel % 40 == 0 )
+        echo "\n";
+
     $pixel_in_line = $pixel % 40;
 
     if (    $cycles [ $pixel ] >= $pixel_in_line - 1
@@ -39,7 +42,6 @@ for ( $pixel = 0; $pixel < 240; $pixel++ )
         echo '█';
     else
         echo '∙';
-
-    if ( ($pixel + 1) % 40 == 0 )
-        echo "\n";
 }
+
+echo "\n";
