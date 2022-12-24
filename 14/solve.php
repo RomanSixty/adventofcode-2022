@@ -119,7 +119,7 @@ function pour ( $map, $viewport, $part = 1 )
 echo 'First part: ' . pour ( $map, $viewport ) . "\n";
 
 // let's build the floor making some pretentious assumptions about the maximum expansion
-// if there were no obstacles a perfect pile would be double its height
+// if there were no obstacles a perfect pile's width would be double its height
 
 $viewport [ 'bottom' ] += 2;
 
