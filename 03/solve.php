@@ -1,12 +1,11 @@
 <?php
 
-$rucksacks = file ( __DIR__ . '/input.txt' );
+$rucksacks = file ( __DIR__ . '/input.txt', FILE_IGNORE_NEW_LINES );
 
 $prio_sum = 0;
 
 foreach ( $rucksacks as &$rucksack )
 {
-    $rucksack = trim ( $rucksack );
     $compartment_size = strlen ( $rucksack ) / 2;
 
     $compartments = explode ( '+', chunk_split ( $rucksack, $compartment_size, '+' ) );

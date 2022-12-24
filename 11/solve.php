@@ -9,11 +9,11 @@ foreach ( explode ( "\n\n", $input ) as $monkey )
     preg_match ( '~^Monkey (\d+):.*Starting items: ([0-9, ]+).*Operation: new = (.*)\n.*Test: divisible by (\d+).*true: throw to monkey (\d+).* false: throw to monkey (\d+)$~s', $monkey, $matches );
 
     $monkeys [ $matches [ 1 ]] = [
-        'items' => explode ( ', ', $matches [ 2 ] ),
-        'operation' => '$item = ' . str_replace ( 'old', '$item', $matches [ 3 ] ) . ';',
-        'modulo' => $matches [ 4 ],
-        'true' => $matches [ 5 ],
-        'false' => $matches [ 6 ],
+        'items'       => explode ( ', ', $matches [ 2 ] ),
+        'operation'   => '$item = ' . str_replace ( 'old', '$item', $matches [ 3 ] ) . ';',
+        'modulo'      => $matches [ 4 ],
+        'true'        => $matches [ 5 ],
+        'false'       => $matches [ 6 ],
         'inspections' => 0
     ];
 }
@@ -52,7 +52,7 @@ function business ( $monkeys, $part )
                     $item %= $fake_relief;
 
                 if ( $item % $monkey [ 'modulo' ] == 0 )
-                    $monkeys [ $monkey [ 'true' ]][ 'items' ][] = $item;
+                    $monkeys [ $monkey [ 'true'  ]][ 'items' ][] = $item;
                 else
                     $monkeys [ $monkey [ 'false' ]][ 'items' ][] = $item;
             }

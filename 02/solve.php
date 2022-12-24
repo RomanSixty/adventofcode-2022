@@ -1,8 +1,6 @@
 <?php
 
-$input = file_get_contents ( __DIR__ . '/input.txt' );
-
-$rounds = explode ( "\n", $input );
+$rounds = file ( __DIR__ . '/input.txt', FILE_IGNORE_NEW_LINES );
 
 // there's 9 possible games... let's just list their outcomes
 $games = [

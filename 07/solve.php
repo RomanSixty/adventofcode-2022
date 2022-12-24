@@ -49,7 +49,7 @@ foreach ( $input as $line )
 
 $part1_sum = $part2_sum = 0;
 
-$space_available = 70000000 - $directories [ '/' ];
+$space_available         = 70000000 - $directories [ '/' ];
 $additional_space_needed = 30000000 - $space_available;
 
 sort ( $directories );
