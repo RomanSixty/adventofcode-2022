@@ -15,3 +15,7 @@ Each day's solution resides in a numbered directory containing a text file `inpu
 Run using php-cli, e.g.:
 
 `php 01/solve.php`
+
+## Specials
+
+* Day 14: include `visualize.php` and comment out `createSVG()` to create a nice graphical rendering of the result
