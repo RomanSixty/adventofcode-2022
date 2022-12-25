@@ -11,12 +11,13 @@ foreach ( $input as $line )
     $distance = abs ( $matches [ 1 ] - $matches [ 3 ] ) + abs ( $matches [ 2 ] - $matches [ 4 ] );
 
     $sensors[] = [ 'x' => $matches [ 1 ], 'y' => $matches [ 2 ], 'distance' => $distance ];
-    $beacons[] = [ 'x' => $matches [ 3 ], 'y' => $matches [ 4 ] ];
+
+    $beacons [ $matches [ 4 ]][ $matches [ 3 ]] = true;
 }
 
 function check_row_coverage ( $y, $limit_low = null, $limit_high = null )
 {
-    global $sensors, $beacons;
+    global $sensors;
 
     $coverage_areas = [];
 
@@ -76,39 +77,40 @@ function check_row_coverage ( $y, $limit_low = null, $limit_high = null )
     }
     while ( $area_count > 2 && $area_count > count ( $coverage_areas ) );
 
-    // only first part: positions of actual beacons do not count
-    if ( $limit_low === null && $limit_high === null )
-        foreach ( $beacons as $beacon )
-            if ( $beacon [ 'y' ] == $y )
-                foreach ( $coverage_areas as $key => &$area )
-                {
-                    // first or last spot: resize area (or remove if area_size is 1)
-                    if ( $area [ 'from' ] == $area [ 'to' ] && $beacon [ 'x' ] == $area [ 'from' ] )
-                        array_splice ( $coverage_areas, $key, 1 );
-                    elseif ( $beacon [ 'x' ] == $area [ 'from' ] )
-                        $area [ 'from' ]++;
-                    elseif ( $beacon [ 'x' ] == $area [ 'to' ] )
-                        $area [ 'to' ]--;
-
-                    // somewhere in the middle: split area
-                    elseif ( $beacon [ 'x' ] >= $area [ 'from' ] && $beacon [ 'x' ] <= $area [ 'to' ] )
-                    {
-                        $coverage_areas[] = [
-                            'from' => $beacon [ 'x' ] + 1,
-                            'to'   => $area [ 'to' ]
-                        ];
-
-                        $area [ 'to' ] = $beacon [ 'x' ] - 1;
-                    }
-                }
-
     return $coverage_areas;
 }
 
+$row_to_check = 2000000;
+
+$coverage_on_row = check_row_coverage ( $row_to_check );
+
+foreach ( $beacons [ $row_to_check ] as $x => $bool )
+    foreach ( $coverage_on_row as $key => &$area )
+    {
+        // first or last spot: resize area (or remove if area_size is 1)
+        if ( $area [ 'from' ] == $area [ 'to' ] && $x == $area [ 'from' ] )
+            array_splice ( $coverage_on_row, $key, 1 );
+        elseif ( $x == $area [ 'from' ] )
+            $area [ 'from' ]++;
+        elseif ( $x == $area [ 'to' ] )
+            $area [ 'to' ]--;
+
+        // somewhere in the middle: split area
+        elseif ( $x >= $area [ 'from' ] && $x <= $area [ 'to' ] )
+        {
+            $coverage_on_row[] = [
+                'from' => $x + 1,
+                'to'   => $area [ 'to' ]
+            ];
+
+            $area [ 'to' ] = $x - 1;
+        }
+    }
+
 $count = 0;
 
-foreach ( check_row_coverage ( 2000000 ) as $area )
-    $count += $area [ 'to' ] - $area [ 'from' ] + 1; // limits are included, hence +1
+foreach ( $coverage_on_row as $section )
+    $count += $section [ 'to' ] - $section [ 'from' ] + 1; // limits are included, hence +1
 
 echo "First part: $count\n";
 
