@@ -1,5 +1,7 @@
 <?php
 
+//include __DIR__ . '/visualize.php';
+
 $input = file ( __DIR__ . '/input.txt', FILE_IGNORE_NEW_LINES );
 
 $map = [];
@@ -34,8 +36,14 @@ foreach ( $input as $y => $row )
     }
 }
 
-echo 'First part: ' . ( count ( pathfinder ( $start, [ $end ] ) ) - 1 ) . "\n";
-echo 'Second part: ' . ( count ( pathfinder ( $end, $lowest, 'down' ) ) - 1 ) . "\n";
+$path_1 = pathfinder ( $start, [ $end ] );
+$path_2 = pathfinder ( $end, $lowest, 'down' );
+
+echo 'First part: ' . ( count ( $path_1 ) - 1 ) . "\n";
+echo 'Second part: ' . ( count ( $path_2 ) - 1 ) . "\n";
+
+//createSVG ( 1, $map, $path_1 );
+//createSVG ( 2, $map, $path_2 );
 
 /**
  * pathfinding
