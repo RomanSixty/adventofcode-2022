@@ -10,8 +10,8 @@ foreach ( $pairs as $index => $pair )
     $pair = explode ( "\n", $pair );
 
     // don't try this at home:
-    eval ( '$left = '  . $pair [ 0 ] . ';' );
-    eval ( '$right = ' . $pair [ 1 ] . ';' );
+    $left  = eval ( 'return ' . $pair [ 0 ] . ';' );
+    $right = eval ( 'return ' . $pair [ 1 ] . ';' );
 
     $all_packets[] = $left;
     $all_packets[] = $right;
