@@ -26,5 +26,6 @@ To profile execution time and memory usage, use (for day 1 for example):
 
 For the following days you can generate SVGs (`output_1.svg` resp. `output_2.svg` in the day's folder). Just include `visualize.php` and uncomment the `createSVG()` calls.
 
-* Day 12: height map with the found path
-* Day 14: the rock structure and sand piles
+* **Day 8:** overall tree map (darker = higher), best tree hilighted in part 2
+* **Day 12:** height map with the found path
+* **Day 14:** the rock structure and sand piles

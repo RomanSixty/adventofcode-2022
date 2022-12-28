@@ -1,5 +1,7 @@
 <?php
 
+//include __DIR__ . '/visualize.php';
+
 $input = file ( __DIR__ . '/input.txt', FILE_IGNORE_NEW_LINES );
 
 $visible_trees = [];
@@ -76,6 +78,8 @@ $max_scenic_score = 0;
 
 $taller_trees = [];
 
+$best_tree = null;
+
 while ( $tall_trees = array_pop ( $trees_by_height ) )
 {
     $taller_trees = array_merge ( $taller_trees, $tall_trees );
@@ -116,8 +120,17 @@ while ( $tall_trees = array_pop ( $trees_by_height ) )
             }
         }
 
-        $max_scenic_score = max ( $max_scenic_score, array_product ( $distances ) );
+        $tree_score = array_product ( $distances );
+
+        if ( $tree_score > $max_scenic_score )
+        {
+            $best_tree = $tree;
+            $max_scenic_score = $tree_score;
+        }
     }
 }
 
 echo "Second part: $max_scenic_score\n";
+
+//createSVG ( 1, $input );
+//createSVG ( 2, $input, $best_tree );
