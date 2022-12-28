@@ -111,7 +111,7 @@ function pour ( $map, $viewport, $part = 1 )
         $counter++;
 
     //draw_map ( $map, $viewport );
-    //createSVG ( $map, $viewport, $part );
+    //createSVG ( $part, $map, $viewport );
 
     return $counter;
 }

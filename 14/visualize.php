@@ -11,9 +11,12 @@ function draw_map ( $map, $viewport )
     }
 }
 
-function createSVG ( $map, $viewport, $part )
+function createSVG ( $part, $map, $viewport )
 {
-    $svg[] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' . $viewport [ 'left' ] . ' 0 ' . $viewport [ 'right' ] - $viewport [ 'left' ] . ' ' . $viewport [ 'bottom' ] . '">';
+    $width = $viewport [ 'right' ] - $viewport [ 'left' ];
+    $height = $viewport [ 'bottom' ];
+
+    $svg[] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' . $viewport [ 'left' ] . ' 0 ' . $width . ' ' . $height . '" width="' . ($width*4) . '" height="' . ($height*4) . '">';
 
     // walls
     foreach ( $map as $y => $point )
