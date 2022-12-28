@@ -1,5 +1,7 @@
 <?php
 
+//include __DIR__ . '/visualize.php';
+
 $input = file ( __DIR__ . '/input.txt', FILE_IGNORE_NEW_LINES );
 
 $positions_of_tail = [];
@@ -90,3 +92,6 @@ foreach ( $input as $move )
 
 echo 'First part: ' .  count ( $positions_of_tail [ 1 ] ) . "\n";
 echo 'Second part: ' . count ( $positions_of_tail [ 9 ] ) . "\n";
+
+//createSVG ( 1, $positions_of_tail [ 1 ] );
+//createSVG ( 2, $positions_of_tail [ 9 ] );
