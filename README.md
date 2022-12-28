@@ -16,6 +16,10 @@ Run using php-cli, e.g.:
 
 `php 01/solve.php`
 
+To profile execution time and memory usage, use (for day 1 for example):
+
+`php profile.php 1`
+
 ## Specials
 
 * Day 14: include `visualize.php` and comment out `createSVG()` to create a nice graphical rendering of the result
