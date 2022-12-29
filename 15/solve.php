@@ -4,13 +4,19 @@ $input = file ( __DIR__ . '/input.txt', FILE_IGNORE_NEW_LINES );
 
 $sensors = $beacons = [];
 
+const FROM = 0;
+const   TO = 1;
+const    X = 0;
+const    Y = 1;
+const DIST = 2;
+
 foreach ( $input as $line )
 {
     preg_match ( '~^Sensor at x=([0-9-]+), y=([0-9-]+): closest beacon is at x=([0-9-]+), y=([0-9-]+)$~', $line, $matches );
 
     $distance = abs ( $matches [ 1 ] - $matches [ 3 ] ) + abs ( $matches [ 2 ] - $matches [ 4 ] );
 
-    $sensors[] = [ 'x' => $matches [ 1 ], 'y' => $matches [ 2 ], 'distance' => $distance ];
+    $sensors[] = [ $matches [ 1 ], $matches [ 2 ], $distance ];
 
     $beacons [ $matches [ 4 ]][ $matches [ 3 ]] = true;
 }
@@ -24,93 +30,77 @@ function check_row_coverage ( $y, $limit_low = null, $limit_high = null )
     // which sensors even have a chance to cover this row?
     foreach ( $sensors as $sensor )
     {
-        $diff_y = abs ( $sensor [ 'y' ] - $y );
+        $diff_y = abs ( $sensor [ Y ] - $y );
 
-        if ( $diff_y <= $sensor [ 'distance' ] )
+        if ( $diff_y <= $sensor [ DIST ] )
         {
-            $remaining = $sensor [ 'distance' ] - $diff_y;
+            $remaining = $sensor [ DIST ] - $diff_y;
 
-            $coverage_areas[] = [
-                'from' => ( $limit_low  === null ) ? $sensor [ 'x' ] - $remaining : max ( $limit_low,  $sensor [ 'x' ] - $remaining ),
-                'to'   => ( $limit_high === null ) ? $sensor [ 'x' ] + $remaining : min ( $limit_high, $sensor [ 'x' ] + $remaining )
-            ];
+            $from = $limit_low  === null ? $sensor [ X ] - $remaining : max ( $limit_low,  $sensor [ X ] - $remaining );
+            $to   = $limit_high === null ? $sensor [ X ] + $remaining : min ( $limit_high, $sensor [ X ] + $remaining );
+
+            foreach ( $coverage_areas as $key => $area )
+            {
+                // already found one that encloses us completely
+                if ( $area [ FROM ] <= $from && $area [ TO ] >= $to )
+                    continue 2;
+
+                // or is completely enclosed by us
+                elseif ( $from <= $area [ FROM ] && $to >= $area [ TO ] )
+                {
+                    unset ( $coverage_areas [ $key ] );
+
+                    break;
+                }
+            }
+
+            if ( isset ( $coverage_areas [ $from ] ) )
+                $coverage_areas [ $from ][ TO ] = max ( $coverage_areas [ $from ][ TO ], $to );
+            else
+                $coverage_areas [ $from ] = [ $from, $to ];
         }
     }
 
-    // merge areas
-    do
-    {
-        $area_count = count ( $coverage_areas );
-
-        foreach ( $coverage_areas as $key => &$area )
-            for ( $key2 = $key + 1; $key2 < count ( $coverage_areas ); $key2++ )
-            {
-                // completely enclosed
-                if ( $area [ 'from' ] <= $coverage_areas [ $key2 ][ 'from' ] && $area [ 'to' ] >= $coverage_areas [ $key2 ][ 'to' ] )
-                {
-                    array_splice ( $coverage_areas, $key2, 1 );
-                    continue 3;
-                }
-                elseif ( $coverage_areas [ $key2 ][ 'from' ] <= $area [ 'from' ] && $coverage_areas [ $key2 ][ 'to' ] >= $area [ 'to' ] )
-                {
-                    $area [ 'from' ] = $coverage_areas [ $key2 ][ 'from' ];
-                    $area [ 'to'   ] = $coverage_areas [ $key2 ][ 'to'   ];
-
-                    array_splice ( $coverage_areas, $key2, 1 );
-                    continue 3;
-                }
-
-                // expanding on either side
-                elseif ( $area [ 'from' ] <= $coverage_areas [ $key2 ][ 'from' ] && $area [ 'to' ] + 1 >= $coverage_areas [ $key2 ][ 'from' ] )
-                {
-                    $area [ 'to' ] = $coverage_areas [ $key2 ][ 'to' ];
-                    array_splice ( $coverage_areas, $key2, 1 );
-                    continue 3;
-                }
-                elseif ( $area [ 'from' ] - 1 <= $coverage_areas [ $key2 ][ 'to' ] && $area [ 'to' ] >= $coverage_areas [ $key2 ][ 'to' ] )
-                {
-                    $area [ 'from' ] = $coverage_areas [ $key2 ][ 'from' ];
-                    array_splice ( $coverage_areas, $key2, 1 );
-                    continue 3;
-                }
-            }
-    }
-    while ( $area_count > 2 && $area_count > count ( $coverage_areas ) );
+    ksort ( $coverage_areas );
 
     return $coverage_areas;
 }
 
-$row_to_check = 2000000;
+function count_coverage ( $coverage )
+{
+    $latest = [];
+    $sum = 0;
 
-$coverage_on_row = check_row_coverage ( $row_to_check );
-
-foreach ( $beacons [ $row_to_check ] as $x => $bool )
-    foreach ( $coverage_on_row as $key => &$area )
+    foreach ( $coverage as $range )
     {
-        // first or last spot: resize area (or remove if area_size is 1)
-        if ( $area [ 'from' ] == $area [ 'to' ] && $x == $area [ 'from' ] )
-            array_splice ( $coverage_on_row, $key, 1 );
-        elseif ( $x == $area [ 'from' ] )
-            $area [ 'from' ]++;
-        elseif ( $x == $area [ 'to' ] )
-            $area [ 'to' ]--;
-
-        // somewhere in the middle: split area
-        elseif ( $x >= $area [ 'from' ] && $x <= $area [ 'to' ] )
+        if ( empty ( $latest ) )
+            $latest = $range;
+        else
         {
-            $coverage_on_row[] = [
-                'from' => $x + 1,
-                'to'   => $area [ 'to' ]
-            ];
+            if ( $range [ FROM ] <= $latest [ TO ] )
+                $latest [ TO ] = $range [ TO ];
+            else
+            {
+                $sum += $latest [ TO ] - $latest [ FROM ] + 1;
 
-            $area [ 'to' ] = $x - 1;
+                $latest = $range;
+            }
         }
     }
 
-$count = 0;
+    if ( !empty ( $latest ) )
+        $sum += $latest [ TO ] - $latest [ FROM ] + 1;
 
-foreach ( $coverage_on_row as $section )
-    $count += $section [ 'to' ] - $section [ 'from' ] + 1; // limits are included, hence +1
+    return $sum;
+}
+
+$row_to_check = 2000000;
+
+$count = count_coverage ( check_row_coverage ( $row_to_check ) );
+
+// any beacons on that row? then subtract those
+if ( !empty ( $beacons [ $row_to_check ] ) )
+    $count -= count ( $beacons [ $row_to_check ] );
 
 echo "First part: $count\n";
 
@@ -121,24 +111,27 @@ echo "First part: $count\n";
 $limit_low  = 0;
 $limit_high = 4000000;
 
-$max_coverage = $limit_high - $limit_low;
+$max_coverage = $limit_high - $limit_low + 1;
 
 for ( $y = $limit_low; $y <= $limit_high; $y++ )
 {
-    $coverage_on_row = check_row_coverage ( $y, $limit_low, $limit_high );
+    $coverage = check_row_coverage ( $y, $limit_low, $limit_high );
 
-    // first entry with two seperate areas has to be the one...
-    // well actually™ could also be a single area with size one less
-    // than $limit_high if the very first or last column are empty
-    // but see if I care...
-    if ( count ( $coverage_on_row ) > 1 )
+    if ( count_coverage ( $coverage ) < $max_coverage )
     {
-        foreach ( $coverage_on_row as $area )
-            if ( $area [ 'from' ] == 0 )
-                $x = $area [ 'to' ] + 1;
+        $latest_x = $limit_low;
 
-        echo 'Second part: ' . ( $x * $limit_high + $y ) . "\n";
+        foreach ( $coverage as $range )
+        {
+            if ( $range [ FROM ] - 1 > $latest_x )
+            {
+                $x = $range [ FROM ] - 1;
+                echo 'Second part: ' . ( $x * 4000000 + $y ) . "\n";
 
-        break;
+                break 2;
+            }
+            else
+                $latest_x = $range [ TO ];
+        }
     }
 }
